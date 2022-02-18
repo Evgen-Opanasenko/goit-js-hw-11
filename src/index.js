@@ -35,7 +35,7 @@ function delMarcapGel() {
 function onLoadPhoto() {
   disableLoadBtn(true);
   console.log(pageStart);
-  getPhotoWrap();
+  getAsyncArr();
 }
 
 function onGetValue(e) {
@@ -49,35 +49,30 @@ function onGetValue(e) {
     return;
   }
   console.log(inputValue);
-  getPhotoWrap();
+  getAsyncArr();
 }
-
-function getPhotoWrap() {
-  getPhotoArr(inputValue, pageStart)
-    .then(res => {
-      //   console.log(res.data);
-      if (res.hits.length < perPage) {
-        renderGellery(res.hits);
-        Notify.success("We're sorry, but you've reached the end of search results.");
-        hideLoadBtn();
-      } else {
-        renderGellery(res.hits);
-        if (pageStart === 1) {
-          Notify.success(`URA!!! We found ${res.totalHits} images.`);
-        } else {
-          Notify.success(
-            `${res.totalHits - perPage * (pageStart - 1)} more pictures ready for viewing`,
-          );
-        }
-      }
-    })
-    .catch(error => {
-      delMarcapGel();
-      Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+const getAsyncArr = async function getPhotoWrap() {
+  try {
+    const res = await getPhotoArr(inputValue, pageStart);
+    if (res.hits.length < perPage) {
+      renderGellery(res.hits);
+      Notify.success("We're sorry, but you've reached the end of search results.");
       hideLoadBtn();
-    });
+    } else {
+      renderGellery(res.hits);
+      if (pageStart === 1) {
+        Notify.success(`URA!!! We found ${res.totalHits} images.`);
+      } else {
+        Notify.info(`${res.totalHits - perPage * pageStart} more pictures ready for viewing`);
+      }
+    }
+  } catch (error) {
+    delMarcapGel();
+    Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+    hideLoadBtn();
+  }
   pageStart += 1;
-}
+};
 
 function renderGellery(arr) {
   const markup = arr
@@ -85,7 +80,7 @@ function renderGellery(arr) {
       //тут же надо в ссылку оборачивать?????
       return `<li class="item">  
                 <div class="photo-card">
-                <img src="${webformatURL}" min-height="100%"  width="100%" alt="${tags}" loading="lazy" />
+                <img src="${webformatURL}" max-height="100%"  width="100%" alt="${tags}" loading="lazy" />
                 <div class="info">
                  <p class="info-item">
                 <b>Likes</b>${likes}
