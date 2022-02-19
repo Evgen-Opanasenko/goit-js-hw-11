@@ -54,10 +54,15 @@ function onGetValue(e) {
 const getAsyncArr = async function getPhotoWrap() {
   try {
     const res = await getPhotoArr(inputValue, pageStart);
+    if (res.hits.length === 0) {
+      Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+      return;
+    }
     if (res.hits.length < perPage) {
       renderGellery(res.hits);
       Notify.success("We're sorry, but you've reached the end of search results.");
       hideLoadBtn();
+      return;
     } else {
       renderGellery(res.hits);
       if (pageStart === 1) {
